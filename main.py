@@ -19,22 +19,22 @@ class JointSymmetrize:
 
     def __getRightSideJoint(self, l_jnt):
         for r_jnt in cmds.ls(type="joint"):
-            r_pref = self.__getPrefix(r_jnt, self.R_EXPR)
-            # extracting left suffix to check if same right suffix
-            r_suf = l_jnt.replace(self.l_pref_name, '')
-            r_jnt_made = r_pref + r_suf
-            # checking if the joint corresponds to its symmetrical left
-            return r_jnt if r_jnt_made is r_jnt else ''
+            r_check_pref = self.__getPrefix(r_jnt, self.R_EXPR)
+            l_check_pref = self.__getPrefix(l_jnt, self.L_EXPR)
+            if r_check_pref is not None:
+                r_suf = r_jnt.replace(r_check_pref, '', 1)
+                l_suf = l_jnt.replace(l_check_pref, '', 1)
+                print(r_suf, l_suf)
+                if r_suf == l_suf:
+                    return r_jnt
 
     def symmetrize(self, joint_list):
         for cur_joint in joint_list:
-            # print('cur_joint ' + str(cur_joint))
-            # print(self.__getPrefix(cur_joint, self.L_EXPR))
-            print(cmds.objExists(self.__getRightSideJoint(cur_joint)))
-            if self.__getPrefix(cur_joint, self.L_EXPR) is not None and cmds.objExists(
-                    self.__getRightSideJoint(cur_joint)):
-                cmds.connectAttr(cur_joint + '.translateZ', self.__getRightSideJoint(cur_joint) + '.translateZ', force=True)
-                cmds.connectAttr(cur_joint + '.translateY', self.__getRightSideJoint(cur_joint) + '.translateY', force=True)
+            if self.__getRightSideJoint(cur_joint) is not None:
+                cmds.connectAttr(cur_joint + '.translateZ', self.__getRightSideJoint(cur_joint) + '.translateZ',
+                                 force=True)
+                cmds.connectAttr(cur_joint + '.translateY', self.__getRightSideJoint(cur_joint) + '.translateY',
+                                 force=True)
 
                 cmds.shadingNode('multiplyDivide', asUtility=True, name='multiDivMirror')
                 cmds.connectAttr(cur_joint + '.translateX', 'multiDivMirror.input1X')
